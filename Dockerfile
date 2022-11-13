@@ -26,3 +26,5 @@ RUN sed -i "s|/././home/xpgcust/tree/RI-2020.4/ib/tools/swtools-x86_64-linux|${T
 ENV PATH=${INSTALL_DIR}/XtensaTools/bin:${PATH}
 ENV XTENSA_CORE=venus_hifi4
 ENV XTENSA_SYSTEM=${INSTALL_DIR}/venus_hifi4/config
+
+RUN apt-get install -y make
