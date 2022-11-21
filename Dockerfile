@@ -27,4 +27,5 @@ ENV PATH=${INSTALL_DIR}/XtensaTools/bin:${PATH}
 ENV XTENSA_CORE=venus_hifi4
 ENV XTENSA_SYSTEM=${INSTALL_DIR}/venus_hifi4/config
 
-RUN apt-get install -y make
+RUN apt-get update && \
+    apt-get install -y make cmake ninja-build
