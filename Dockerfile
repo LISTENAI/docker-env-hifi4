@@ -1,32 +1,50 @@
+# syntax=docker/dockerfile:1.4
+
 FROM ubuntu:22.04
 
-RUN mkdir -p /opt/hifi4
-WORKDIR /opt/hifi4
+RUN <<EOF
+set -eux
+apt-get update
+apt-get install -y --no-install-recommends \
+    ca-certificates \
+    wget \
+    zstd
+rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && \
-    apt-get install -y wget zstd
+mkdir -p /opt/hifi4
+cd /opt/hifi4
 
-RUN wget https://cdn.iflyos.cn/public/lisa-binary/xt-venus/XtensaTools_RI_2021_7_linux.tar.zst && \
-    tar -xvf XtensaTools_RI_2021_7_linux.tar.zst && \
-    rm -f XtensaTools_RI_2021_7_linux.tar.zst && \
-    wget https://cdn.iflyos.cn/public/lisa-binary/xt-venus/venus_hifi4_linux-2021.7.tar.zst && \
-    tar -xvf venus_hifi4_linux-2021.7.tar.zst && \
-    rm -f venus_hifi4_linux-2021.7.tar.zst
+wget https://cdn.iflyos.cn/public/lisa-binary/xt-venus/XtensaTools_RI_2021_7_linux.tar.zst
+tar -xvf XtensaTools_RI_2021_7_linux.tar.zst
+rm -f XtensaTools_RI_2021_7_linux.tar.zst
+wget https://cdn.iflyos.cn/public/lisa-binary/xt-venus/venus_hifi4_linux-2021.7.tar.zst
+tar -xvf venus_hifi4_linux-2021.7.tar.zst
+rm -f venus_hifi4_linux-2021.7.tar.zst
 
-ENV INSTALL_DIR=/opt/hifi4/RI-2021.7-linux
-ENV TOOLS_DIR=${INSTALL_DIR}/XtensaTools
-ENV CORE_DIR=${INSTALL_DIR}/venus_hifi4
+export INSTALL_DIR=/opt/hifi4/RI-2021.7-linux
+export TOOLS_DIR=${INSTALL_DIR}/XtensaTools
+export CORE_DIR=${INSTALL_DIR}/venus_hifi4
 
-ENV PARAMS_FILE=${CORE_DIR}/config/venus_hifi4-params
+export PARAMS_FILE=${CORE_DIR}/config/venus_hifi4-params
+sed -i "s|/././home/xpgcust/tree/RI-2021.7/ib/tools/swtools-x86_64-linux|${TOOLS_DIR}|g" ${PARAMS_FILE}
+sed -i "s|/././project/cust/genapp/RI-2021.7/build/listenai_sw/swupgrade/venus_hifi4/351139/RI-2021.7/venus_hifi4|${CORE_DIR}|g" ${PARAMS_FILE}
+sed -i "s|/././usr/xtensa/tools-8.0|${TOOLS_DIR}/Tools|g" ${PARAMS_FILE}
+EOF
 
-RUN sed -i "s|/././home/xpgcust/tree/RI-2021.7/ib/tools/swtools-x86_64-linux|${TOOLS_DIR}|g" ${PARAMS_FILE} && \
-    sed -i "s|/././project/cust/genapp/RI-2021.7/build/listenai_sw/swupgrade/venus_hifi4/351139/RI-2021.7/venus_hifi4|${CORE_DIR}|g" ${PARAMS_FILE} && \
-    sed -i "s|/././usr/xtensa/tools-8.0|${TOOLS_DIR}/Tools|g" ${PARAMS_FILE}
-
-ENV PATH=${INSTALL_DIR}/XtensaTools/bin:${PATH}
+ENV PATH=/opt/hifi4/RI-2021.7-linux/XtensaTools/bin:${PATH}
 ENV XTENSA_CORE=venus_hifi4
-ENV XTENSA_SYSTEM=${INSTALL_DIR}/venus_hifi4/config
+ENV XTENSA_SYSTEM=/opt/hifi4/RI-2021.7-linux/venus_hifi4/config
 
-RUN apt-get update && \
-    apt-get install -y make cmake ninja-build python3 python3-pip git && \
-    pip3 install west
+RUN <<EOF
+apt-get update
+apt-get install -y --no-install-recommends \
+    cmake \
+    git \
+    make \
+    ninja-build \
+    python3 \
+    python3-pip
+rm -rf /var/lib/apt/lists/*
+
+pip3 install west
+EOF
