@@ -41,6 +41,7 @@ RUN groupadd -r hifi4 && \
 # Install additional tools
 
 RUN apt-get update && \
-    apt-get install -y make cmake ninja-build python3 git
+    apt-get install -y make cmake ninja-build python3 python3-pip git && \
+    pip3 install west
 
 USER hifi4
